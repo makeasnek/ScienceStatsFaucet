@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BOINC->GRC Faucet</title>
+    <style>.column {
+  float: left;
+  width: 33.33%;
+  min-height: 1px;
+}
+
+/* Clear floats after the columns */
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+    </style>
+</head>
+<body>
+<div align="center" id="header">
+</div>
+<div class="row">
+    <div class="column" id="leftcolumn"> </div>
+    <div class="column" id="middlecolumn">
+        <h1>Welcome to the BOINC -> GRC Faucet</h1>
+        This faucet can help you get the first few GRC you need to set up Gridcoin for solo crunching (make a beacon).
+        Help keep this faucet alive by <a href="#sidestaking">sidestaking</a> a portion of your staking proceeds to it.
+        <br><br>
+        Here's how to use it:
+        <ol>
+            <li>Connect to one of our approved BOINC projects and start crunching work for them. If you are a new user,
+                NFS@Home is <i>strongly</i> suggested as workunits validate very quickly. Otherwise, you may be waiting
+                on <i>another user</i> to complete the same workunit which could take days!
+            </li>
+            <li>Your work will earn you credits. Once you have enough credits, paste the link to your user profile in
+                the form below, along with your GRC address, to receive 2 GRC
+            </li>
+            <li>You must temporarily change your username/nickname at the project to your GRC address</li>
+            <li>You may need to wait up to 24 hours after doing so, as we must wait for projects to publish your stats</li>
+            <li>Some projects, such as World Community Grid, require you to enable stats exports in your user settings. See the <a href="https://gridcoin.us/guides/whitelist.htm">Gridcoin Whitelist</a> for which projects require this and how to do so.</li>
+            <li>Existing BOINC users who maybe haven't crunched for a while: you must have at least some "recent average credit" ("RAC"), meaning you must have crunched at least one workunit in roughly the past 2 weeks. Your RAC can be very small, but it must be greater than 1</li>
+        </ol>
+        <h3>{{ BALANCEWARNING }}</h3>
+        <form method="POST">
+            <div><label>Profile Url: <input type="text" name="profileurl"></label></div>
+            <div><label>GRC Address: <input type="text" name="grcaddress"></label></div>
+            {{ hcaptcha|safe }}
+            <input type="submit" value="Submit">
+        </form>{{ SUCCESS|safe }}<h3>{{ ERROR }}</h3>
+        <h3>Profile URLs</h3>
+        You can get your profile URL by logging into your account at the project website and clicking on profile. This is their format:<br>
+        <small>https://escatter11.fullerton.edu/nfs/show_user.php?userid=1111<br>
+            https://worldcommunitygrid.org/stat/viewMemberInfo.do\?userName=yournamehere</small>
+        <h3>Approved Projects</h3>
+        <ul>{{ REQUIRED_CREDITS|safe }}</ul>
+        <h3>Faucet Rules</h3>
+        <ul>
+            <li>You can only use the faucet one time</li>
+            <li>If you already have a beacon setup, you can't use the faucet</li>
+            <li>If you have >2 GRC in your wallet, you can't use the faucet since you already have enough for a beacon</li>
+        </ul>
+        <a id="sidestaking"><h3>Donate</h3></a>
+        This faucet is funded by people like you! You can donate directly to the faucet by sending GRC to {{FAUCETADDRESS}}.<br><br>
+        You can also sidestake, which means donating a % of your staking rewards, this is a good way to donate small amounts over time. To add this to your wallet's sidestakes, go to hamburger menu (top left) --> help --> debug window --> console and type in the following two commands followed by enter. Replace the number 5 with the % you would like to donate from each stake.
+        <ul>
+            <li>enablesidestaking=1</li>
+            <li> sidestake={{ FAUCETADDRESS }},5</li>
+        </ul>
+        Current faucet balance: {{ BALANCE }}
+    </div>
+    <div class="column" id="rightcolumn"> </div>
+</div>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-1T8N9C2X7T"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-1T8N9C2X7T');
+</script>
+
+<div align="center" id="footer">
+    <a href="about_faucet">About</a><br>
+</div>
+</body>
+</html>

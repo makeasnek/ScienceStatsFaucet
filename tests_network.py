@@ -1,0 +1,12 @@
+# These tests require network access and result in requests to BOINC project servers, so should be run seperately from
+# automated tests
+
+import main
+
+# PROFILE CHECK. Note these will fail if random user we selected changes their username
+assert isinstance(main.get_credit_nfs('https://escatter11.fullerton.edu/nfs/show_user.php?userid=760','ChertseyAl'),int)
+assert isinstance(main.get_credit_amicable('https://sech.me/boinc/Amicable/show_user.php?userid=2167','modesti'),int)
+assert isinstance(main.get_credit_wcg('https://www.worldcommunitygrid.org/stat/viewMemberInfo.do?userName=ericinboston','ericinboston'),int)
+
+# Address check. Note this will fail if the address balance is actually 0
+assert main.get_address_balance('SK7WASoXZFQrQLwTmabkS3Co8RUq6UevDU')>0
