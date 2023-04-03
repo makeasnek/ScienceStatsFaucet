@@ -21,14 +21,23 @@ def sanitize_address(input_str:str)->str:
     :return:
     """
     return re.sub('[^A-Z,1-9]','',input_str,flags=re.MULTILINE|re.IGNORECASE)
-def uid_to_cpid(redis: redis.Redis, uid: str, standardized_project_url: str):
+def json_to_dict(user_json:str):
+    return json.loads(user_json)
+def dict_to_json(my_dict:dict):
+    return json.dumps(my_dict)
+def uid_to_cpid(redis: redis.Redis, uid: str, standardized_project_url: str)->Union[str,None]:
     """
     :param redis: redis connection
     :param uid: single uid
     :param standardized_project_url:
     :return:
     """
-    return redis.hget("uid_table_"+standardized_project_url, uid)
+    user_dict_json=redis.hget("uid_table_"+standardized_project_url, uid)
+    if not user_dict_json:
+        return None
+    user_dict=json_to_dict(user_dict_json)
+    cpid=user_dict.get('cpid')
+    return cpid
 def ban_uid(redis:redis.Redis,uid:Union[str,Set[str]],standardized_project_url:str):
     """
 

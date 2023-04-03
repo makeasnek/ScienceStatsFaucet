@@ -24,7 +24,7 @@ standardized_url=common.standardize_project_url('https://escatter11.fullerton.ed
 assert not common.uid_to_cpid(redis=redis_connection,uid='THISUIDDOESNOTEXIST',standardized_project_url=standardized_url)
 
 # Sanitizing code
-assert common.sanitize_url("<a href='https://escatter11.fullerton.edu/nfs/show_user.php?userid=21405'\n\n>")=='ahref=https://escatter11.fullerton.edu/nfs/show_user.php?userid=2145'
+assert common.sanitize_url("<a href='https://escatter11.fullerton.edu/nfs/show_user.php?userid=21405'\n\n>")=='ahref=https://escatter11.fullerton.edu/nfs/show_user.php?userid=21405'
 assert common.sanitize_address("<a href='https://escatter11.fullerton.edu/nfs/show_user.php?userid=21405'\n\n>")=='ahrefhttpsescatter11fullertonedunfsshowuserphpuserid2145'
 
 # URL address checker
@@ -37,3 +37,17 @@ assert main.valid_profile_url('google.com')==False
 # URL standardizer
 assert 'ESCATTER11.FULLERTON.EDUNFS'==common.standardize_project_url('https://escatter11.fullerton.edu/nfs/')
 assert 'ESCATTER11.FULLERTON.EDUNFS'==common.standardize_project_url('https://escatter11.fullerton.edu/nfs/show_user.php?userid=21405')
+
+# JSON encoding/decoding
+test_dict={
+    'A':'A',
+    'B':1,
+    'C':['A','B'],
+    'D':True,
+    'E':False,
+    'F':2.144
+}
+my_json=common.dict_to_json(test_dict)
+assert my_json=='{"A": "A", "B": 1, "C": ["A", "B"], "D": true, "E": false, "F": 2.144}'
+dict_output=common.json_to_dict(my_json)
+assert test_dict==dict_output

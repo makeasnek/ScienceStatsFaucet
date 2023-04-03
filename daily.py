@@ -98,12 +98,20 @@ def ban_beaconed_users(redis:redis.Redis,project_urls:List[str],data_storage_dir
             uid=user['id']
             cpid=user['cpid']
             rac=user.get('expavg_credit',0)
+            expavg_time=user.get('expavg_time',0)
+            create_time=user.get('create_time',0)
             if should_be_banned(cpid,grc_client) and str(uid)!='3710112':
                 uids_to_ban.add(uid)
                 cpids_to_ban.add(cpid)
             else:
                 if float(rac)>1:
-                    mapping_table[uid]=cpid
+                    user_dict={
+                        'cpid':cpid,
+                        'rac':rac,
+                        'expavg_time':expavg_time,
+                        'create_time':create_time,
+                    }
+                    mapping_table[uid]=common.dict_to_json(user_dict)
         common.ban_uid(redis,uids_to_ban,standardized_url)
         common.ban_cpid(redis,cpids_to_ban)
         result=redis.hset("uid_table_"+standardized_url, mapping=mapping_table)
@@ -117,7 +125,7 @@ if __name__=="__main__":
     pool = redis.ConnectionPool(host='localhost', port=6379, db=0,decode_responses=True)
     redis = redis.Redis(connection_pool=pool)
     # clear existing db, useful for debugging
-    # redis.flushdb()
+    #redis.flushdb()
 
     # connect to wallet
     grc_client = common.GridcoinClientConnection(rpc_user=grc_rpc_user, rpc_port=grc_rpc_port,
