@@ -151,6 +151,7 @@ def get_address_balance(address:str)->int:
     except Exception as e:
         logging.error('Error fetching address balance {} {}'.format(address,e))
         return 0
+    return 0
 def make_required_credits_html(redis:redis.Redis, project_list:List[str]):
     return_value=''
     for project in project_list:
@@ -256,10 +257,11 @@ def faucet():
                                        ERROR="ERROR: You are ineligible to use this faucet, perhaps because you have used it before?",
                                        BALANCE=balance, BALANCE_WARNING=balance_warning,REQUIRED_CREDITS=required_credits_html,FAUCETADDRESS=config.faucet_donation_address)
         if not config.SKIP_BALANCE_CHECK:
-            if get_address_balance(address=grc_address)>3:
+            address_balance=get_address_balance(address=grc_address)
+            if address_balance>3:
                 return render_template('index.html',
-                                       ERROR="ERROR: You are ineligible to use this faucet because you have enough GRC to start a beacon",
-                                       BALANCE=balance, BALANCE_WARNING=balance_warning,REQUIRED_CREDITS=required_credits_html,FAUCETADDRESS=config.faucet_donation_address)
+                                   ERROR="ERROR: You are ineligible to use this faucet because you have enough GRC to start a beacon",
+                                   BALANCE=balance, BALANCE_WARNING=balance_warning,REQUIRED_CREDITS=required_credits_html,FAUCETADDRESS=config.faucet_donation_address)
 
         # fetch user profile from project, verify credit amounts
         if not config.SKIP_CREDIT_CHECK:
