@@ -122,7 +122,6 @@ def ban_beaconed_users(redis:redis.Redis,project_urls:List[str],data_storage_dir
         common.ban_uid(redis,uids_to_ban,standardized_url)
         common.ban_cpid(redis,cpids_to_ban)
         result=redis.hset("uid_table_"+standardized_url, mapping=mapping_table)
-        print('') # TODO remove
 
 if __name__=="__main__":
     grc_rpc_user = config.gridcoin_rpc_user
@@ -133,7 +132,7 @@ if __name__=="__main__":
     pool = redis.ConnectionPool(host='localhost', port=6379, db=0,decode_responses=True)
     redis = redis.Redis(connection_pool=pool)
     # clear existing db, useful for debugging
-    redis.flushdb() # TODO remove
+    # redis.flushdb()
 
     # connect to wallet
     grc_client = common.GridcoinClientConnection(rpc_user=grc_rpc_user, rpc_port=grc_rpc_port,
