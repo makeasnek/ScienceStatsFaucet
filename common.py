@@ -14,6 +14,38 @@ def sanitize_url(input_url:str)->str:
     step1=re.sub('[^A-Z,0-9,//:\\?=\._]','',input_url,flags=re.MULTILINE|re.IGNORECASE)
     step2=re.sub('\n','',step1,flags=re.MULTILINE|re.IGNORECASE)
     return step2
+def user_above_minimum(user:Dict[str,str],mag_per_rac:float,padding:float,faucet_amount:float)->Union[float,bool]:
+    """
+    m = mag/rac (this you should be able to compute from the magnitude for the project divided by the total RAC for the project)
+    u = GRC/day/mag = 1/4
+    n = number of days since crunch start (real number decimal days)
+    C = TC / n = number of credits per day (assumed constant)
+    S = 2^(6/7) * (1 - 2^(-n/7)) / (2^(6/7) - 2) + n (this is the dimensionless form of the summation taking into account the buildup)
+    Then
+    Est GRC equiv earned if already solo = m * u * C * S
+    I think the create_time should be ok.
+    Should be epoch, which means n = (current time - create time) / 86400.
+    so then as long as m * u * C * S > faucet_amount, we should be good
+    """
+    import time
+    current_time= int(time.time())
+    m= mag_per_rac
+    u= .25
+    n = (current_time - float(user['create_time']))/86400
+    tc=float(user['total_credit'])
+    C = tc/n
+    S = 2**(6/7)*(1-2**(-n/7))/(2**(6/7)-2)+n
+    est_grc_solo_amount=m*u*C*S
+    padded_amount=faucet_amount+(faucet_amount*padding)
+    if est_grc_solo_amount>padded_amount:
+        print(
+            'CPID {} w/ {}TC and {} RAC over {} days. Predicting user would have earned {} GRC with this amount of work. Faucet amount is {}. User qualifies for faucet'.format(
+                user['cpid'], int(tc), C, n, est_grc_solo_amount, faucet_amount))
+        return True
+    print(
+        'CPID {} w/ {}TC and {} RAC over {} days. Predicting user would have earned {} GRC with this amount of work. Faucet amount is {}. User does not qualify for faucet'.format(
+            user['cpid'], int(tc), C, n, est_grc_solo_amount, faucet_amount))
+    return est_grc_solo_amount
 def sanitize_address(input_str:str)->str:
     """
     Quick and dirty way to sanitize a URL
@@ -73,7 +105,6 @@ def unban_cpid(redis:redis.Redis,cpid:str):
 
     :param redis: redis connection
     :param cpid: single uid or set of UIDs
-    :param standardized_project_url:
     :return:
     """
     redis.srem('banned_cpids',cpid)

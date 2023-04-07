@@ -2,6 +2,9 @@ Project URLs are standardized with commmon.standardize_project_url
 
 REDIS database structure is below.
 
+RAC:MAG ratios:
+standardized_url'_rac_mag_ratio':str
+
 Required credits: (dict stored as json)
 standardized_url+'_required_credits':str
 

@@ -5,6 +5,7 @@ gridcoin_rpc_port:str='port_here'
 faucet_grc_amount:float=1.5
 data_storage_dir:str='/opt/faucet' # where to store data for faucet, should not be accessible by web users
 faucet_donation_address='' # if you want to solicit donations for the faucet, put in your address here
+padding:float=.15 # Faucet calculate how many credits user would need to earn X GRC solo crunching. This is the % extra we tack on to make faucet more expensive. So .15=15%
 # hcaptcha stuff
 HCAPTCHA_SITE_KEY = ''
 HCAPTCHA_SECRET_KEY = ''

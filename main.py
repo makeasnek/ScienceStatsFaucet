@@ -155,14 +155,16 @@ def make_required_credits_html(redis:redis.Redis, project_list:List[str]):
     return_value=''
     for project in project_list:
         standardized_url=common.standardize_project_url(project)
-        credits=redis.get(standardized_url+'_required_credits')
-        if credits:
-            return_value=return_value+'<li>{}: {}</li>'.format(project,credits)
-        else:
-            return_value = return_value + '<li>{}: Error: Temporarily disabled</li>'.format(project)
+        return_value=return_value+'<li>{}</li>'.format(project)
     return return_value
 
 def make_required_credits_dict(redis:redis.Redis, project_list:List[str])->Dict[str,int]:
+    """
+    NO LONGER USED
+    :param redis:
+    :param project_list:
+    :return:
+    """
     return_value={}
     for project in project_list:
         standardized_url=common.standardize_project_url(project)
@@ -205,6 +207,12 @@ def faucet():
         balance_warning = ''
         if balance < 100 and not config.SKIP_LOW_BALANCE_CHECK:
             balance_warning = "Faucet is low on funds, you can't use the faucet right now :("
+        # Get global vars for index.html to pull
+        total_dispensed=redis.get('total_dispensed')
+        total_grc_dispensed=redis.get('total_grc_dispensed')
+        app.config['TOTAL_DISPENSED']=str(total_dispensed)
+        app.config['TOTAL_GRC_DISPENSED'] = str(total_grc_dispensed)
+
         required_credits_html=make_required_credits_html(redis, config.project_urls)
     except Exception as e:
         logging.error('Error loading server {}'.format(e))
@@ -221,19 +229,12 @@ def faucet():
         grc_address = common.sanitize_address(request.form.get('grcaddress'))
         standardized_project_url=common.standardize_project_url(profile_url)
         uid=common.uid_from_url(profile_url)
-        required_credits_dict=make_required_credits_dict(redis,config.project_urls)
+        #required_credits_dict=make_required_credits_dict(redis,config.project_urls)
         # perform local checks for username/address eligibility
         if not valid_grc_address(grc_address):
             return render_template('index.html', ERROR="ERROR: INVALID GRC ADDRESS",BALANCE=balance,BALANCE_WARNING=balance_warning,REQUIRED_CREDITS=required_credits_html,FAUCETADDRESS=config.faucet_donation_address)
         if not valid_profile_url(profile_url):
             return render_template('index.html', ERROR="ERROR: INVALID PROFILE URL",BALANCE=balance,BALANCE_WARNING=balance_warning,REQUIRED_CREDITS=required_credits_html,FAUCETADDRESS=config.faucet_donation_address)
-        if standardized_project_url not in required_credits_dict:
-            return render_template('index.html',
-                                   ERROR="ERROR: PROJECT STATS TEMPORARILY OFFLINE, TRY AGAIN LATER OR WITH A DIFFERENT PROJECT",
-                                   BALANCE=balance,
-                                   BALANCE_WARNING=balance_warning, REQUIRED_CREDITS=required_credits_html,
-                                   FAUCETADDRESS=config.faucet_donation_address)
-
         if not config.SKIP_UID_CHECK:
             if common.is_uid_banned(redis=redis,uid=uid,standardized_project_url=standardized_project_url):
                 return render_template('index.html', ERROR="ERROR: You are ineligible to use this faucet, perhaps because you have used it before?",BALANCE=balance,BALANCE_WARNING=balance_warning,REQUIRED_CREDITS=required_credits_html,FAUCETADDRESS=config.faucet_donation_address)
@@ -262,7 +263,35 @@ def faucet():
 
         # fetch user profile from project, verify credit amounts
         if not config.SKIP_CREDIT_CHECK:
-            credits=''
+            user_json=redis.hget('uid_table_'+standardized_project_url,uid)
+            if not user_json:
+                return render_template('index.html',
+                                       ERROR="ERROR: Can't find any assigned credit, you must wait 24 hours for projects to export your credit and have a 'recent average credit' above 1",
+                                       BALANCE=balance, BALANCE_WARNING=balance_warning,
+                                       REQUIRED_CREDITS=required_credits_html,
+                                       FAUCETADDRESS=config.faucet_donation_address)
+            if user_json==[None]:
+                return render_template('index.html',
+                                       ERROR="ERROR: Can't find any assigned credit, you must wait 24 hours for projects to export your credit and have a 'recent average credit' above 1",
+                                       BALANCE=balance, BALANCE_WARNING=balance_warning,
+                                       REQUIRED_CREDITS=required_credits_html,
+                                       FAUCETADDRESS=config.faucet_donation_address)
+            user = common.json_to_dict(user_json)
+            mag_per_rac=redis.get(standardized_project_url + '_rac_mag_ratio')
+            if not mag_per_rac:
+                return render_template('index.html',
+                                       ERROR="ERROR: Error fetching project stats please try again later",
+                                       BALANCE=balance, BALANCE_WARNING=balance_warning,
+                                       REQUIRED_CREDITS=required_credits_html,
+                                       FAUCETADDRESS=config.faucet_donation_address)
+            credits_result=common.user_above_minimum(user=user,mag_per_rac=float(mag_per_rac),padding=config.padding,faucet_amount=config.faucet_grc_amount)
+            if isinstance(credits_result,float):
+                return render_template('index.html',
+                                       ERROR="ERROR: Your current crunching would have earned you approx {:.2f} GRC, you must wait until it is over {}".format(credits_result,config.faucet_grc_amount),
+                                       BALANCE=balance, BALANCE_WARNING=balance_warning,
+                                       REQUIRED_CREDITS=required_credits_html,
+                                       FAUCETADDRESS=config.faucet_donation_address)
+
             if 'ESCATTER11' in profile_url.upper():
                 credits=get_credit_nfs(profile_url,grc_address)
             elif 'worldcommunitygrid' in profile_url.upper():
@@ -270,9 +299,6 @@ def faucet():
             if isinstance(credits,str):
                 logging.error("Error getting profile URL {} : {}".format(profile_url,credits))
                 return render_template('index.html', ERROR="ERROR: Error fetching profile page or parsing url. Make sure you changed your username to your GRC address",BALANCE=balance,BALANCE_WARNING=balance_warning,REQUIRED_CREDITS=required_credits_html,FAUCETADDRESS=config.faucet_donation_address)
-            if credits<required_credits_dict[standardized_project_url]:
-                return render_template('index.html', ERROR="ERROR: Error insufficient credit to use faucet, you must crunch some more",
-                                       BALANCE=balance, BALANCE_WARNING=balance_warning, REQUIRED_CREDITS=required_credits_html,FAUCETADDRESS=config.faucet_donation_address)
         balance = get_balance(grc_client)
         if balance>10 or config.SKIP_LOW_BALANCE_CHECK:
             if not config.SKIP_BANNING:

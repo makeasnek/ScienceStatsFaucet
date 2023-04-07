@@ -6,6 +6,8 @@ The site is written in Python and uses a redis server to store information. Why 
 ## Faucet goal
 Require a set amount of "work" to use faucet, such that users have no incentive to use faucet more than once. This faucet is best used to help onboard users who need their first few GRC to setup a beacon.
 
+Other faucets have trouble staying sustainably funded as they hand out coins to whoever asks. This faucet actually makes them work for it.
+
 ## Faucet features
  - Requires user to earn a set amount of credit at BOINC project(s) in order to use faucet
  - This amount is dynamically calculated based on how much credit a user would need to _normally_ earn the faucet's payout amount via solo or pool crunching
@@ -13,12 +15,22 @@ Require a set amount of "work" to use faucet, such that users have no incentive 
  - Maps user IDs at projects to CPIDs and bans both after a single use
  - Integrates directly with a Gridcoin wallet to send transactions
 
+### Customization
+ - Enable/disable hcaptcha
+ - Enable/disable banning UIDs and CPIDs after single-use
+ - Add your own favourite BOINC projects as required work
+ - Enable/disable requiring work at all, you can just turn this into a regular faucet
+
+Extendability: One could conceivably extend this faucet to distribute other coins such as Etica. All that would be needed is to:
+ - Establish an exchange rate between GRC and chosen coin
+ - Write code to send the tx via that coin's wallet or via RPC to remote note like Metamask does.
+
 ## To run your own faucet
  - You must have localhost access to a Gridcoin wallet's RPC port and access to a redis server
  - Requires python 3.6 or higher and packages listed in requirements.txt
  - Download this repo
  - Copy config_template.py to config.py, modify to suit your use case
- - Edit templates/index.html and templates/about.html to your liking. Note the google analytics tag near bottom.
+ - Edit templates/index.html and templates/about.html to your liking. Note the google analytics tag near bottom and hcaptcha.
  - Run daily.py for the first time to build the database
  - Create a cron job to run daily.py every 24 hours to download stats from BOINC project websites
  - Run main.py
@@ -26,7 +38,7 @@ Require a set amount of "work" to use faucet, such that users have no incentive 
 ### System requirements
 Testing this on an Ubuntu machine got me these basic requirements:
 
-Memory: suggedted minimum 2GB
+Memory: suggested absolute minimum 2GB
  - gridcoin (GUI wallet) 800MB
  - daily script when running: 50MB
  - main script when running: 25MB

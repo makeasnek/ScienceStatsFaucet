@@ -33,15 +33,15 @@
                 NFS@Home is <i>strongly</i> suggested as workunits validate very quickly. Otherwise, you may be waiting
                 on <i>another user</i> to complete the same workunit which could take days!
             </li>
-            <li>Your work will earn you credits. Once you have enough credits, paste the link to your user profile in
-                the form below, along with your GRC address, to receive 2 GRC
+            <li>Your work will earn you credits. Once you have some credits, paste the link to your user profile in
+                the form below, along with your GRC address, to receive 2 GRC. If you don't have enough credits, it will tell you to come back later. Note that credit amounts only update once every 24 hours.
             </li>
-            <li>You must temporarily change your username/nickname at the project to your GRC address</li>
-            <li>You may need to wait up to 24 hours after doing so, as we must wait for projects to publish your stats</li>
+            <li>You must temporarily change your username/nickname at the project to your GRC address. Again, this update may take 24 hours</li>
             <li>Some projects, such as World Community Grid, require you to enable stats exports in your user settings. See the <a href="https://gridcoin.us/guides/whitelist.htm">Gridcoin Whitelist</a> for which projects require this and how to do so.</li>
             <li>Existing BOINC users who maybe haven't crunched for a while: you must have at least some "recent average credit" ("RAC"), meaning you must have crunched at least one workunit in roughly the past 2 weeks. Your RAC can be very small, but it must be greater than 1</li>
         </ol>
         <h3>{{ BALANCEWARNING }}</h3>
+        <h3>REQUEST YOUR GRC</h3>
         <form method="POST">
             <div><label>Profile Url: <input type="text" name="profileurl"></label></div>
             <div><label>GRC Address: <input type="text" name="grcaddress"></label></div>
@@ -49,11 +49,9 @@
             <input type="submit" value="Submit">
         </form>{{ SUCCESS|safe }}<h3>{{ ERROR }}</h3>
         <h3>Profile URLs</h3>
-        You can get your profile URL by logging into your account at the project website and clicking on profile. This is their format:<br>
+        You can get your profile URL by logging into your account at the project website and clicking on profile. On NFS@Home go to Profile --> User stats. This is their format:<br>
         <small>https://escatter11.fullerton.edu/nfs/show_user.php?userid=1111<br>
-            https://worldcommunitygrid.org/stat/viewMemberInfo.do\?userName=yournamehere</small>
-        <h3>Approved Projects</h3>
-        <ul>{{ REQUIRED_CREDITS|safe }}</ul>
+            https://worldcommunitygrid.org/stat/viewMemberInfo.do?userName=yournamehere</small>
         <h3>Faucet Rules</h3>
         <ul>
             <li>You can only use the faucet one time</li>
@@ -67,7 +65,8 @@
             <li>enablesidestaking=1</li>
             <li> sidestake={{ FAUCETADDRESS }},5</li>
         </ul>
-        Current faucet balance: {{ BALANCE }}
+        <p>Current faucet balance: {{ BALANCE }}GRC.</p>
+        <p>Total faucet uses: {{ config.TOTAL_DISPENSED }} for {{ config.TOTAL_GRC_DISPENSED }} total GRC</p>
     </div>
     <div class="column" id="rightcolumn"> </div>
 </div>
