@@ -1,6 +1,6 @@
 # ScienceStats Gridcoin "Proof of Work" Faucet
 
-This is a repo to contain the ScienceStats Gridcoin "Proof of Work" Faucet.
+This is a repo to contain the ScienceStats Gridcoin "Proof of Work" Faucet. You can see it in operation live at http://sciencestats.net
 
 The site is written in Python and uses a redis server to store information. Why Redis? Because learning SQL seemed hard.
 ## Faucet goal
