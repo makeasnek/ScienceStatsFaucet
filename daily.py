@@ -124,6 +124,7 @@ def ban_beaconed_users(redis:redis.Redis,project_urls:List[str],data_storage_dir
         result=redis.hset("uid_table_"+standardized_url, mapping=mapping_table)
 
 if __name__=="__main__":
+    print('Starting daily script')
     grc_rpc_user = config.gridcoin_rpc_user
     grc_rpc_password = config.gridcoin_rpc_password
     grc_rpc_port = config.gridcoin_rpc_port
@@ -149,3 +150,4 @@ if __name__=="__main__":
     for project_url,mag_per_unit_of_rac in mag_ratios.items():
         standardized_url=common.standardize_project_url(project_url)
         redis.set(standardized_url + '_rac_mag_ratio', mag_per_unit_of_rac)
+    print('Daily script complete')
