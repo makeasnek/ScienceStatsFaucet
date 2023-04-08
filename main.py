@@ -296,7 +296,7 @@ def faucet():
 
             if 'ESCATTER11' in profile_url.upper():
                 credits=get_credit_nfs(profile_url,grc_address)
-            elif 'worldcommunitygrid' in profile_url.upper():
+            elif 'WORLDCOMMUNITYGRID' in profile_url.upper():
                 credits=get_credit_wcg(profile_url,grc_address)
             if isinstance(credits,str):
                 logging.error("Error getting profile URL {} : {}".format(profile_url,credits))
