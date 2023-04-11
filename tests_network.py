@@ -6,7 +6,7 @@ import main
 # PROFILE CHECK. Note these will fail if random user we selected changes their username
 assert isinstance(main.get_credit_nfs('https://escatter11.fullerton.edu/nfs/show_user.php?userid=760','ChertseyAl'),int)
 assert isinstance(main.get_credit_amicable('https://sech.me/boinc/Amicable/show_user.php?userid=2167','modesti'),int)
-assert isinstance(main.get_credit_wcg('https://www.worldcommunitygrid.org/stat/viewMemberInfo.do?userName=ericinboston','ericinboston'),int)
+assert main.get_credit_wcg('https://worldcommunitygrid.org/boinc/show_user.php?userid=1156028','S5CSzXD3SkTA9xGGpeBtoNJpyryACBR9RD')==None
 
 # Address check. Note this will fail if the address balance is actually 0
 assert main.get_address_balance('SK7WASoXZFQrQLwTmabkS3Co8RUq6UevDU')>0
