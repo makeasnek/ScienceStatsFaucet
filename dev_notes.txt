@@ -14,7 +14,7 @@ banned_uids_standardized_url={uid1:str,uid2:str...}
 Banned CPIDs across all projects:
 banned_cpids={cpid1:str,cpid2:str,etc}
 
-Lookup table. Note that banned UIDs and CPIDs don't appear here, nor do UIDs with RAC <1. This table exists to prevent a user from requesting faucet using multiple project URLs
+User lookup table. Note that UIDs with RAC <1 don't appear here.
 uid_table_standardizedurl={'uid1':User,'uid2':User...}
 User object is just a dict which has been encoded to a JSON string. So to read it from redis, we need to decode it. The dict has the following structure:
 {
@@ -26,6 +26,6 @@ total_credit:str=total_credit
 
 Single vars we track:
 # of times faucet has sent out a tx
-total_dispensed:int
+total_dispensed:float
 # total value of those txes
-total_grc_dispensed:int
+total_grc_dispensed:float

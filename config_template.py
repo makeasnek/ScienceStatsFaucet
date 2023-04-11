@@ -17,7 +17,7 @@ HCAPTCHA_ENABLED:bool=True
 project_urls:List[str]=['https://escatter11.fullerton.edu/nfs/','https://www.worldcommunitygrid.org/boinc/']
 valid_profile_regexes = [
         'escatter11.fullerton.edu/nfs/show_user.php\?userid=\d*',
-    'worldcommunitygrid.org/stat/viewMemberInfo.do?userName=\w*'
+    'worldcommunitygrid.org/boinc/show_user.php\?userid=\d*'
     ]
 
 # Dev options. Various options to make testing easier
@@ -29,3 +29,4 @@ SKIP_BALANCE_CHECK:bool=False # Skip checking if destination address already has
 SKIP_LOW_BALANCE_CHECK:bool=False # Skip disabling faucet if balance is too low
 SKIP_BANNING:bool=False # Skip banning users after first use
 SKIP_CREDIT_CHECK:bool=False # hand out GRC regardless of user credit amount
+SKIP_ADDRESS_VERIFICATION:bool=False # skip verifying user has changed profile name to address

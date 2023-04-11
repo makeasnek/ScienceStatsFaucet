@@ -1,5 +1,6 @@
 import re
 import requests,common
+import xmltodict
 from bs4 import BeautifulSoup
 import logging,redis
 import config
@@ -27,7 +28,7 @@ def valid_grc_address(address: str) -> bool:
 def valid_profile_url(url: str) -> bool:
     # EXAMPLE URLS:
     # https://escatter11.fullerton.edu/nfs/show_user.php?userid=21405
-    # https://www.worldcommunitygrid.org/stat/viewMemberInfo.do?userName=hotpotato
+    # https://worldcommunitygrid.org/boinc/show_user.php?userid=1156028
     regexes = config.valid_profile_regexes
     match_url = url.upper().replace('HTTPS://', '').replace('HTTP://', '').replace('WWW.', '')
     if match_url.endswith('/'):
@@ -37,35 +38,23 @@ def valid_profile_url(url: str) -> bool:
             return True
     return False
 
-def get_credit_wcg(url:str,address:str)-> Union[int,str]:
+def get_credit_wcg(url:str,address:str)-> Union[None,str]:
     """
 
     :param url: Any URL
-    :return: Credit amount or string detailing error
+    :return: String detailing error or None
     """
     try:
 
         # request user's profile page
         response=requests.get(url)
         html_response = response.content.decode()
-        single_line_html_response = html_response.replace('\n', '')
-        soup = BeautifulSoup(html_response, 'html.parser')
-        tables= soup.find('td', { 'class' : 'palegrey' })
+        found_dict=xmltodict.parse(html_response)
 
         # verify address matches
-        address_search='<span class="contentTextBold"> +'+address+'</span></td>'
-        address_match = re.search(address_search, single_line_html_response,
-                          flags=re.MULTILINE|re.IGNORECASE)
-        if not address_match:
+        name=found_dict.get('user',{}).get('name')
+        if address[0:29] not in name:
             return "GRC address not found on profile page"
-
-        # get credit
-        credit_search='(<span>Points generated \(rank\)</span></td> +<td class="palegrey" width="\d+"><img src="/images/spacer.gif" width="\d" height="\d" alt=""></td> +<td class="palegrey" align="right"><span>)([\d,]*)( \(#49\)</span></td>)'
-        credit_match = re.search(credit_search, single_line_html_response,
-                                  flags=re.MULTILINE | re.IGNORECASE)
-        if credit_match:
-            result = credit_match.group(2).replace(',', '')
-            return int(result)
     except Exception as e:
         return str(e)
 def get_credit_nfs(url:str,address:str)-> Union[int,str]:
@@ -159,21 +148,6 @@ def make_required_credits_html(redis:redis.Redis, project_list:List[str]):
         return_value=return_value+'<li>{}</li>'.format(project)
     return return_value
 
-def make_required_credits_dict(redis:redis.Redis, project_list:List[str])->Dict[str,int]:
-    """
-    NO LONGER USED
-    :param redis:
-    :param project_list:
-    :return:
-    """
-    return_value={}
-    for project in project_list:
-        standardized_url=common.standardize_project_url(project)
-        credits=redis.get(standardized_url+'_required_credits')
-        if credits:
-            return_value[standardized_url]=int(credits)
-    return return_value
-
 def get_balance(grc_client:common.GridcoinClientConnection)->int:
     """
     Get balance of wallet, return it as int.
@@ -186,7 +160,7 @@ def get_balance(grc_client:common.GridcoinClientConnection)->int:
         if isinstance(balance,float):
             return int(balance)
     return 0
-@app.route('/about_faucet',methods=['GET','POST'])
+@app.route('/about_faucet',methods=['GET'])
 def about():
     return render_template('about.html')
 @app.route('/',methods=['GET','POST'])
@@ -229,36 +203,47 @@ def faucet():
         profile_url = common.sanitize_url(request.form.get('profileurl'))
         grc_address = common.sanitize_address(request.form.get('grcaddress'))
         standardized_project_url=common.standardize_project_url(profile_url)
+        logging.info('Faucet request: {} {} {}'.format(profile_url,grc_address,standardized_project_url))
         uid=common.uid_from_url(profile_url)
-        #required_credits_dict=make_required_credits_dict(redis,config.project_urls)
         # perform local checks for username/address eligibility
         if not valid_grc_address(grc_address):
+            logging.info('Request declined invalid GRC address')
             return render_template('index.html', ERROR="ERROR: INVALID GRC ADDRESS",BALANCE=balance,BALANCE_WARNING=balance_warning,REQUIRED_CREDITS=required_credits_html,FAUCETADDRESS=config.faucet_donation_address)
         if not valid_profile_url(profile_url):
+            logging.info('Request declined invalid profile address')
             return render_template('index.html', ERROR="ERROR: INVALID PROFILE URL",BALANCE=balance,BALANCE_WARNING=balance_warning,REQUIRED_CREDITS=required_credits_html,FAUCETADDRESS=config.faucet_donation_address)
+        if not uid:
+            logging.info('Request declined unable to determine UID')
+            return render_template('index.html',
+                                   ERROR="ERROR: Unable to determine userID, are you sure profile url is in correct format?",
+                                   BALANCE=balance, BALANCE_WARNING=balance_warning,
+                                   REQUIRED_CREDITS=required_credits_html, FAUCETADDRESS=config.faucet_donation_address)
         if not config.SKIP_UID_CHECK:
             if common.is_uid_banned(redis=redis,uid=uid,standardized_project_url=standardized_project_url):
-                return render_template('index.html', ERROR="ERROR: You are ineligible to use this faucet, perhaps because you have used it before?",BALANCE=balance,BALANCE_WARNING=balance_warning,REQUIRED_CREDITS=required_credits_html,FAUCETADDRESS=config.faucet_donation_address)
-
+                logging.info('Request declined UID banned')
+                return render_template('index.html', ERROR="ERROR: You have already used the faucet, it can only be used once",BALANCE=balance,BALANCE_WARNING=balance_warning,REQUIRED_CREDITS=required_credits_html,FAUCETADDRESS=config.faucet_donation_address)
         # check that user has a CPID and that it is not banned
         if not config.SKIP_UID_TRANSLATION:
             cpid=common.uid_to_cpid(redis,uid,standardized_project_url)
         else:
             cpid=None
-        if not config.SKIP_UID_TRANSLATION:
+        if not config.SKIP_BEACON_CHECK:
+            if common.is_cpid_banned(redis,cpid=cpid):
+                logging.info('Request declined CPID banned')
+                return render_template('index.html',
+                                       ERROR="ERROR: You are ineligible to use this faucet, perhaps because you have used it before?",
+                                       BALANCE=balance, BALANCE_WARNING=balance_warning,REQUIRED_CREDITS=required_credits_html,FAUCETADDRESS=config.faucet_donation_address)
+        if not config.SKIP_UID_TRANSLATION: # this must come AFTER beacon check as UIDs banned for having beacons aren't in UID database
             if not cpid:
+                logging.info('Request declined no stats')
                 return render_template('index.html',
                                        ERROR="ERROR: Your stats have not been exported by project yet, OR you have a RAC of <1 please try again in 24 hrs and make sure you have crunched at least one workunit the past two weeks",
                                        BALANCE=balance, BALANCE_WARNING=balance_warning,
                                        REQUIRED_CREDITS=required_credits_html,FAUCETADDRESS=config.faucet_donation_address)
-        if not config.SKIP_BEACON_CHECK:
-            if common.is_cpid_banned(redis,cpid=cpid):
-                return render_template('index.html',
-                                       ERROR="ERROR: You are ineligible to use this faucet, perhaps because you have used it before?",
-                                       BALANCE=balance, BALANCE_WARNING=balance_warning,REQUIRED_CREDITS=required_credits_html,FAUCETADDRESS=config.faucet_donation_address)
         if not config.SKIP_BALANCE_CHECK:
             address_balance=get_address_balance(address=grc_address)
             if address_balance>3:
+                logging.info('Request declined address <3')
                 return render_template('index.html',
                                    ERROR="ERROR: You are ineligible to use this faucet because you have enough GRC to start a beacon",
                                    BALANCE=balance, BALANCE_WARNING=balance_warning,REQUIRED_CREDITS=required_credits_html,FAUCETADDRESS=config.faucet_donation_address)
@@ -267,12 +252,14 @@ def faucet():
         if not config.SKIP_CREDIT_CHECK:
             user_json=redis.hget('uid_table_'+standardized_project_url,uid)
             if not user_json:
+                logging.info('Request declined cant find user credit')
                 return render_template('index.html',
                                        ERROR="ERROR: Can't find any assigned credit, you must wait 24 hours for projects to export your credit and have a 'recent average credit' above 1",
                                        BALANCE=balance, BALANCE_WARNING=balance_warning,
                                        REQUIRED_CREDITS=required_credits_html,
                                        FAUCETADDRESS=config.faucet_donation_address)
             if user_json==[None]:
+                logging.info('Request declined cant find user credit 2')
                 return render_template('index.html',
                                        ERROR="ERROR: Can't find any assigned credit, you must wait 24 hours for projects to export your credit and have a 'recent average credit' above 1",
                                        BALANCE=balance, BALANCE_WARNING=balance_warning,
@@ -281,6 +268,7 @@ def faucet():
             user = common.json_to_dict(user_json)
             mag_per_rac=redis.get(standardized_project_url + '_rac_mag_ratio')
             if not mag_per_rac:
+                logging.info('Request declined no mag_per_rac')
                 return render_template('index.html',
                                        ERROR="ERROR: Error fetching project stats please try again later",
                                        BALANCE=balance, BALANCE_WARNING=balance_warning,
@@ -288,17 +276,20 @@ def faucet():
                                        FAUCETADDRESS=config.faucet_donation_address)
             credits_result=common.user_above_minimum(user=user,mag_per_rac=float(mag_per_rac),padding=config.padding,faucet_amount=config.faucet_grc_amount)
             if isinstance(credits_result,float):
+                logging.info('Request declined not enough credit')
                 return render_template('index.html',
                                        ERROR="ERROR: Your current crunching would have earned you approx {:.2f} GRC, you must wait until it is over {}".format(credits_result,config.faucet_grc_amount),
                                        BALANCE=balance, BALANCE_WARNING=balance_warning,
                                        REQUIRED_CREDITS=required_credits_html,
                                        FAUCETADDRESS=config.faucet_donation_address)
-
+        if not config.SKIP_ADDRESS_VERIFICATION:
+            credits=''
             if 'ESCATTER11' in profile_url.upper():
                 credits=get_credit_nfs(profile_url,grc_address)
             elif 'WORLDCOMMUNITYGRID' in profile_url.upper():
                 credits=get_credit_wcg(profile_url,grc_address)
             if isinstance(credits,str):
+                logging.info('Request declined error getting profile url: {}'.format(credits))
                 logging.error("Error getting profile URL {} : {}".format(profile_url,credits))
                 return render_template('index.html', ERROR="ERROR: Error fetching profile page or parsing url. Make sure you changed your username to your GRC address",BALANCE=balance,BALANCE_WARNING=balance_warning,REQUIRED_CREDITS=required_credits_html,FAUCETADDRESS=config.faucet_donation_address)
         balance = get_balance(grc_client)
@@ -306,8 +297,6 @@ def faucet():
             if not config.SKIP_BANNING:
                 common.ban_uid(redis=redis,uid=uid,standardized_project_url=standardized_project_url)
                 common.ban_cpid(redis=redis,cpid=cpid)
-                if redis.hexists("uid_table_"+standardized_project_url, uid):
-                    redis.hdel("uid_table_"+standardized_project_url, uid)
             try:
                 # send tx
                 tx_id=send_grc(grc_client=grc_client,address=grc_address, amount=config.faucet_grc_amount)
@@ -317,16 +306,17 @@ def faucet():
                 if not total_dispensed:
                     redis.mset({'total_dispensed':1})
                 else:
-                    redis.mset({'total_dispensed': total_dispensed+1})
+                    redis.mset({'total_dispensed': float(total_dispensed)+1})
 
                 total_grc_dispensed=redis.get('total_grc_dispensed')
                 if not total_grc_dispensed:
                     redis.mset({'total_grc_dispensed':config.faucet_grc_amount})
                 else:
-                    redis.mset({'total_grc_dispensed': total_grc_dispensed+config.faucet_grc_amount})
+                    redis.mset({'total_grc_dispensed': float(total_grc_dispensed)+config.faucet_grc_amount})
 
                 # tell user tx successful
                 if tx_id:
+                    logging.info('Request successful!')
                     return render_template('index.html',
                                            SUCCESS='<p style="color:green;">Transaction successful! You can <a href="https://www.gridcoinstats.eu/tx/{}">view tx on Gridcoinstats</a> in around 1 minute. Remember coins may take up to 10 minutes to fully confirm before they can be used for a beacon.</p>'.format(tx_id),
                                            BALANCE=balance, BALANCE_WARNING=balance_warning,

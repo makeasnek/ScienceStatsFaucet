@@ -15,13 +15,15 @@
   display: table;
   clear: both;
 }
+
+
     </style>
 </head>
 <body>
 <div align="center" id="header">
 </div>
 <div class="row">
-    <div class="column" id="leftcolumn"> </div>
+    <div class="column" id="leftcolumn"></div>
     <div class="column" id="middlecolumn">
         <h1>Welcome to the BOINC -> GRC Faucet</h1>
         This faucet can help you get the first few GRC you need to set up Gridcoin for solo crunching (make a beacon).
@@ -33,34 +35,62 @@
                 NFS@Home is <i>strongly</i> suggested as workunits validate very quickly. Otherwise, you may be waiting
                 on <i>another user</i> to complete the same workunit which could take days!
             </li>
-            <li>Your work will earn you credits. Once you have some credits, paste the link to your user profile in
-                the form below, along with your GRC address, to receive 2 GRC. If you don't have enough credits, it will tell you to come back later. Note that credit amounts only update once every 24 hours.
+            <li>Your work will earn credits. Once you have some credits, paste the link to your user profile in
+                the form below (see Profile URLs below for format), along with your GRC address, to receive 2 GRC. If
+                you don't have enough credits, it will tell you to come back later. Note that credit amounts only update
+                once every 24 hours.
             </li>
-            <li>You must temporarily change your username/nickname at the project to your GRC address. This verifies you are the true owner of the account.</li>
-            <li>Some projects, such as World Community Grid, require you to enable stats exports in your user settings. See the <a href="https://gridcoin.us/guides/whitelist.htm">Gridcoin Whitelist</a> for which projects require this and how to do so.</li>
-            <li>Existing BOINC users who maybe haven't crunched for a while: you must have at least some "recent average credit" ("RAC"), meaning you must have crunched at least one workunit in roughly the past 2 weeks. Your RAC can be very small, but it must be greater than 1</li>
+            <li>You must temporarily change your username/nickname at the project to your GRC address. This verifies you
+                are the true owner of the account. It may cut off the end of your address when changing username, this
+                is fine.
+            </li>
+            <li>WCG Users: WCG requires you to manually enable stats export. Go <a href="https://www.worldcommunitygrid.org/ms/viewDataSharing.action">here</a> to do so and choose "display my data". NFS@home does not require this.
+            </li>
+            <li>Existing BOINC users who maybe haven't crunched for a while: you must have at least some "recent average
+                credit" ("RAC"), meaning you must have crunched at least one workunit in roughly the past 2 weeks. Your
+                RAC can be very small, but it must be greater than 1
+            </li>
         </ol>
         <h3>{{ BALANCEWARNING }}</h3>
         <h3>REQUEST YOUR GRC</h3>
         <form method="POST">
-            <div><label>Profile Url: <input type="text" name="profileurl"></label></div>
-            <div><label>GRC Address: <input type="text" name="grcaddress"></label></div>
+            <div><label>Profile Url: <input type="text" name="profileurl" autocomplete="on"></label></div>
+            <div><label>GRC Address: <input type="text" name="grcaddress" autocomplete="on"></label></div>
             {{ hcaptcha|safe }}
             <input type="submit" value="Submit">
-        </form>{{ SUCCESS|safe }}<h3>{{ ERROR }}</h3>
+        </form>
+        {{ SUCCESS|safe }}<h3>{{ ERROR }}</h3>
         <h3>Profile URLs</h3>
-        You can get your profile URL by logging into your account at the project website and clicking on profile. On NFS@Home go to Profile --> User stats. This is their format:<br>
-        <small>https://escatter11.fullerton.edu/nfs/show_user.php?userid=1111<br>
-            https://worldcommunitygrid.org/stat/viewMemberInfo.do?userName=yournamehere</small>
+        <ul>
+            <li>NFS@Home: In BOINC manager, go to view -> advanced view. Go to project tab, select NFS@Home. On left
+                side, click "your account data". Or, on NFS@Home website, go to Your Account (you go here automatically
+                upon
+                login) --> Profile (on right) --> Account Data (on right).
+            </li>
+            <li>On WCG go to Account (top right) -> Profile
+                and Settings -> Profile (left) and get your account number (bottom). Replace the account # in example
+                url below with your account #
+            </li>
+        </ul>
+        <b>This is the expected URL format:<br></b>
+        <ul>
+            <li>https://escatter11.fullerton.edu/nfs/show_user.php?userid=1111</li>
+            <li>https://worldcommunitygrid.org/boinc/show_user.php?userid=1156028</li>
+        </ul>
         <h3>Faucet Rules</h3>
         <ul>
             <li>You can only use the faucet one time</li>
             <li>If you already have a beacon setup, you can't use the faucet</li>
-            <li>If you have >2 GRC in your wallet, you can't use the faucet since you already have enough for a beacon</li>
+            <li>If you have >2 GRC in your wallet, you can't use the faucet since you already have enough for a beacon
+            </li>
         </ul>
         <a id="sidestaking"><h3>Donate</h3></a>
-        This faucet is funded by people like you! You can donate directly to the faucet by sending GRC to {{FAUCETADDRESS}}.<br><br>
-        You can also sidestake, which means donating a % of your staking rewards, this is a good way to donate small amounts over time. To add this to your wallet's sidestakes, go to hamburger menu (top left) --> help --> debug window --> console and type in the following two commands followed by enter. Replace the number 5 with the % you would like to donate from each stake.
+        This faucet is funded by people like you! You can donate directly to the faucet by sending GRC to
+        {{FAUCETADDRESS}}.<br><br>
+        You can also sidestake, which means donating a % of your staking rewards, this is a good way to donate small
+        amounts over time. To add this to your wallet's sidestakes, go to hamburger menu (top left) --> help --> debug
+        window --> console and type in the following two commands followed by enter. Replace the number 5 with the % you
+        would like to donate from each stake.
         <ul>
             <li>enablesidestaking=1</li>
             <li> sidestake={{ FAUCETADDRESS }},5</li>
@@ -68,7 +98,7 @@
         <p>Current faucet balance: {{ BALANCE }}GRC.</p>
         <p>Total faucet uses: {{ config.TOTAL_DISPENSED }} for {{ config.TOTAL_GRC_DISPENSED }} total GRC</p>
     </div>
-    <div class="column" id="rightcolumn"> </div>
+    <div class="column" id="rightcolumn"></div>
 </div>
 
 <!-- Google tag (gtag.js) -->
@@ -79,6 +109,8 @@
   gtag('js', new Date());
 
   gtag('config', 'G-1T8N9C2X7T');
+
+
 </script>
 
 <div align="center" id="footer">

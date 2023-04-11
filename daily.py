@@ -40,7 +40,7 @@ def update_project_stats(data_storage_dir:str=config.data_storage_dir,project_ur
     for project_url in project_urls:
         user_stats_file=os.path.join(project_url,'stats','user.gz')
         standardized_url=common.standardize_project_url(project_url)
-        temp_stats_file_dest=os.path.join(data_storage_dir+standardized_url+'_user_new.gz')
+        temp_stats_file_dest=os.path.join(data_storage_dir,standardized_url+'_user_new.gz')
         final_stats_file_dest=os.path.join(data_storage_dir,standardized_url+'_user.gz')
         try:
             urllib.request.urlretrieve(user_stats_file, temp_stats_file_dest)
@@ -99,32 +99,36 @@ def ban_beaconed_users(redis:redis.Redis,project_urls:List[str],data_storage_dir
         except Exception as e:
             logging.error("Error parsing file: {} {}".format(final_stats_file_dest,e))
             continue
-        for user in user_dict.get('users',{}).get('user',{}):
+        found_users=user_dict.get('users',{}).get('user',{})
+        for user in found_users:
             uid=user['id']
             cpid=user['cpid']
             rac=user.get('expavg_credit',0)
             expavg_time=user.get('expavg_time',0)
             create_time=user.get('create_time',0)
             total_credit = user.get('total_credit', 0)
-            if should_be_banned(cpid,grc_client) and str(uid)!='3710112':
+            if should_be_banned(cpid,grc_client):
                 uids_to_ban.add(uid)
                 cpids_to_ban.add(cpid)
-            else:
-                if float(rac)>1:
-                    user_dict={
-                        'cpid':cpid,
-                        'rac':rac,
-                        'expavg_time':expavg_time,
-                        'create_time':create_time,
-                        'total_credit':total_credit,
-                    }
-                    mapping_table[uid]=common.dict_to_json(user_dict)
+            if float(rac)>1:
+                user_dict={
+                    'cpid':cpid,
+                    'rac':rac,
+                    'expavg_time':expavg_time,
+                    'create_time':create_time,
+                    'total_credit':total_credit,
+                }
+                mapping_table[uid]=common.dict_to_json(user_dict)
         common.ban_uid(redis,uids_to_ban,standardized_url)
         common.ban_cpid(redis,cpids_to_ban)
         result=redis.hset("uid_table_"+standardized_url, mapping=mapping_table)
 
 if __name__=="__main__":
     print('Starting daily script')
+    if not os.path.exists(config.data_storage_dir):
+        logging.error('Error: Faucet data dir does not exist! Unable to complete daily script')
+        print('Error: Faucet data dir does not exist! Unable to complete daily script')
+        quit()
     grc_rpc_user = config.gridcoin_rpc_user
     grc_rpc_password = config.gridcoin_rpc_password
     grc_rpc_port = config.gridcoin_rpc_port
