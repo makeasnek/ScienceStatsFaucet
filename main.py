@@ -3,9 +3,9 @@ import requests,common
 import xmltodict
 from bs4 import BeautifulSoup
 import logging,redis
-import config
+import config,os
 from time import sleep
-logging.basicConfig(filename='server.log', level=logging.ERROR)
+logging.basicConfig(filename=os.path.join(config.data_storage_dir,'server.log'), level=logging.INFO)
 from flask import Flask,render_template,request
 from flask_hcaptcha import hCaptcha
 from typing import List,Dict,Tuple,Union,Type
@@ -211,7 +211,7 @@ def faucet():
             return render_template('index.html', ERROR="ERROR: INVALID GRC ADDRESS",BALANCE=balance,BALANCE_WARNING=balance_warning,REQUIRED_CREDITS=required_credits_html,FAUCETADDRESS=config.faucet_donation_address)
         if not valid_profile_url(profile_url):
             logging.info('Request declined invalid profile address')
-            return render_template('index.html', ERROR="ERROR: INVALID PROFILE URL",BALANCE=balance,BALANCE_WARNING=balance_warning,REQUIRED_CREDITS=required_credits_html,FAUCETADDRESS=config.faucet_donation_address)
+            return render_template('index.html', ERROR="ERROR: INVALID PROFILE ADDRESS, SEE BELOW FOR EXPECTED FORMAT",BALANCE=balance,BALANCE_WARNING=balance_warning,REQUIRED_CREDITS=required_credits_html,FAUCETADDRESS=config.faucet_donation_address)
         if not uid:
             logging.info('Request declined unable to determine UID')
             return render_template('index.html',
@@ -278,7 +278,7 @@ def faucet():
             if isinstance(credits_result,float):
                 logging.info('Request declined not enough credit')
                 return render_template('index.html',
-                                       ERROR="ERROR: Your current crunching would have earned you approx {:.2f} GRC, you must wait until it is over {}".format(credits_result,config.faucet_grc_amount),
+                                       ERROR="ERROR: Your current crunching would have earned you approx {:.2f} GRC, you must wait until it is over {}. Try again later :)".format(credits_result,config.faucet_grc_amount),
                                        BALANCE=balance, BALANCE_WARNING=balance_warning,
                                        REQUIRED_CREDITS=required_credits_html,
                                        FAUCETADDRESS=config.faucet_donation_address)

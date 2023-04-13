@@ -32,17 +32,17 @@
         Here's how to use it:
         <ol>
             <li>Connect to one of our approved BOINC projects and start crunching work for them. If you are a new user,
-                NFS@Home is <i>strongly</i> suggested as workunits validate very quickly. Otherwise, you may be waiting
+                <a href="https://escatter11.fullerton.edu/nfs/" target="_blank">NFS@Home</a> is <i>strongly</i> suggested as workunits validate very quickly. Otherwise, you may be waiting
                 on <i>another user</i> to complete the same workunit which could take days!
-            </li>
-            <li>Your work will earn credits. Once you have some credits, paste the link to your user profile in
-                the form below (see Profile URLs below for format), along with your GRC address, to receive 2 GRC. If
-                you don't have enough credits, it will tell you to come back later. Note that credit amounts only update
-                once every 24 hours.
             </li>
             <li>You must temporarily change your username/nickname at the project to your GRC address. This verifies you
                 are the true owner of the account. It may cut off the end of your address when changing username, this
-                is fine.
+                is fine. You can do this by logging in to the project website. On NFS@Home you can find the setting at my account > other account info. On WCG go <a href="https://www.worldcommunitygrid.org/ms/viewMyProfile.do">here</a>.
+            </li>
+            <li>Your work will earn credits. Once you have some credits, paste the link to your user profile in
+                the form below (see <a href="#profileurls">Profile URLs</a> below for format), along with your GRC address, to receive 2 GRC. If
+                you don't have enough credits, it will tell you to come back later. Note that credit amounts only update
+                once every 24 hours.
             </li>
             <li>WCG Users: WCG requires you to manually enable stats export. Go <a href="https://www.worldcommunitygrid.org/ms/viewDataSharing.action">here</a> to do so and choose "display my data". NFS@home does not require this.
             </li>
@@ -52,7 +52,7 @@
             </li>
         </ol>
         <h3>{{ BALANCEWARNING }}</h3>
-        <h3>REQUEST YOUR GRC</h3>
+        <h3>REQUEST YOUR 2 GRC</h3>
         <form method="POST">
             <div><label>Profile Url: <input type="text" name="profileurl" autocomplete="on"></label></div>
             <div><label>GRC Address: <input type="text" name="grcaddress" autocomplete="on"></label></div>
@@ -60,12 +60,11 @@
             <input type="submit" value="Submit">
         </form>
         {{ SUCCESS|safe }}<h3>{{ ERROR }}</h3>
-        <h3>Profile URLs</h3>
+        <a id="profileurls"><h3>Profile URLs</h3></a>
         <ul>
             <li>NFS@Home: In BOINC manager, go to view -> advanced view. Go to project tab, select NFS@Home. On left
                 side, click "your account data". Or, on NFS@Home website, go to Your Account (you go here automatically
-                upon
-                login) --> Profile (on right) --> Account Data (on right).
+                upon login) --> Profile (on right) --> Account Data (on right).
             </li>
             <li>On WCG go to Account (top right) -> Profile
                 and Settings -> Profile (left) and get your account number (bottom). Replace the account # in example
