@@ -221,7 +221,7 @@ def faucet():
         if not config.SKIP_UID_CHECK:
             if common.is_uid_banned(redis=redis,uid=uid,standardized_project_url=standardized_project_url):
                 logging.info('Request declined UID banned')
-                return render_template('index.html', ERROR="ERROR: You have already used the faucet, it can only be used once",BALANCE=balance,BALANCE_WARNING=balance_warning,REQUIRED_CREDITS=required_credits_html,FAUCETADDRESS=config.faucet_donation_address)
+                return render_template('index.html', ERROR="ERROR: You have already used the faucet or already have a beacon tied to your CPID, the faucet can only be used once",BALANCE=balance,BALANCE_WARNING=balance_warning,REQUIRED_CREDITS=required_credits_html,FAUCETADDRESS=config.faucet_donation_address)
         # check that user has a CPID and that it is not banned
         if not config.SKIP_UID_TRANSLATION:
             cpid=common.uid_to_cpid(redis,uid,standardized_project_url)
@@ -231,7 +231,7 @@ def faucet():
             if common.is_cpid_banned(redis,cpid=cpid):
                 logging.info('Request declined CPID banned')
                 return render_template('index.html',
-                                       ERROR="ERROR: You are ineligible to use this faucet, perhaps because you have used it before?",
+                                       ERROR="ERROR: You have already used the faucet or already have a beacon tied to your CPID, the faucet can only be used once",
                                        BALANCE=balance, BALANCE_WARNING=balance_warning,REQUIRED_CREDITS=required_credits_html,FAUCETADDRESS=config.faucet_donation_address)
         if not config.SKIP_UID_TRANSLATION: # this must come AFTER beacon check as UIDs banned for having beacons aren't in UID database
             if not cpid:
