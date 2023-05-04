@@ -6,6 +6,7 @@ import logging,redis
 import config,os
 from time import sleep
 logging.basicConfig(filename=os.path.join(config.data_storage_dir,'server.log'), level=logging.INFO)
+logging.info('Server starting...')
 from flask import Flask,render_template,request
 from flask_hcaptcha import hCaptcha
 from typing import List,Dict,Tuple,Union,Type
@@ -228,11 +229,19 @@ def faucet():
         else:
             cpid=None
         if not config.SKIP_BEACON_CHECK:
-            if common.is_cpid_banned(redis,cpid=cpid):
-                logging.info('Request declined CPID banned')
+            if cpid==None:
+                logging.info('Request declined, no CPID found for UID {}'.format(uid))
                 return render_template('index.html',
-                                       ERROR="ERROR: You have already used the faucet or already have a beacon tied to your CPID, the faucet can only be used once",
-                                       BALANCE=balance, BALANCE_WARNING=balance_warning,REQUIRED_CREDITS=required_credits_html,FAUCETADDRESS=config.faucet_donation_address)
+                                       ERROR="ERROR: Unable to determine your CPID, probably because your account is < 24 hours old. Please try again later",
+                                       BALANCE=balance, BALANCE_WARNING=balance_warning,
+                                       REQUIRED_CREDITS=required_credits_html,
+                                       FAUCETADDRESS=config.faucet_donation_address)
+            else:
+                if common.is_cpid_banned(redis,cpid=cpid):
+                    logging.info('Request declined CPID banned')
+                    return render_template('index.html',
+                                           ERROR="ERROR: You have already used the faucet or already have a beacon tied to your CPID, the faucet can only be used once",
+                                           BALANCE=balance, BALANCE_WARNING=balance_warning,REQUIRED_CREDITS=required_credits_html,FAUCETADDRESS=config.faucet_donation_address)
         if not config.SKIP_UID_TRANSLATION: # this must come AFTER beacon check as UIDs banned for having beacons aren't in UID database
             if not cpid:
                 logging.info('Request declined no stats')
