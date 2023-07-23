@@ -23,7 +23,6 @@
 <div align="center" id="header">
 </div>
 <div class="row">
-    <div class="column" id="leftcolumn"></div>
     <div class="column" id="middlecolumn">
         <h1>Welcome to the BOINC -> GRC Faucet</h1>
         This faucet can help you get the first few GRC you need to set up Gridcoin for solo crunching (make a beacon).
@@ -31,13 +30,13 @@
         <br><br>
         Here's how to use it:
         <ol>
-            <li>Connect to one of our approved BOINC projects and start crunching work for them. If you are a new user,
+            <li>Connect to one of our approved BOINC projects (<a href="https://escatter11.fullerton.edu/nfs/" target="_blank">NFS@Home</a> or <a href="https://worldcommunitygrid.org" target="_blank">World Community Grid</a>) and start crunching work for them. If you are a new user,
                 <a href="https://escatter11.fullerton.edu/nfs/" target="_blank">NFS@Home</a> is <i>strongly</i> suggested as workunits validate very quickly. Otherwise, you may be waiting
                 on <i>another user</i> to complete the same workunit which could take days!
             </li>
             <li>You must temporarily change your username/nickname at the project to your GRC address. This verifies you
                 are the true owner of the account. It may cut off the end of your address when changing username, this
-                is fine. You can do this by logging in to the project website. On NFS@Home you can find the setting at my account > other account info. On WCG go <a href="https://www.worldcommunitygrid.org/ms/viewMyProfile.do">here</a>.
+                is fine. You can do this by logging in to the project website. On NFS@Home you can find the setting at my account > other account info. On WCG go <a href="https://www.worldcommunitygrid.org/ms/viewMyProfile.do" target="_blank">here</a>.
             </li>
             <li>Your work will earn credits. Once you have some credits, paste the link to your user profile in
                 the form below (see <a href="#profileurls">Profile URLs</a> below for format), along with your GRC address, to receive 2 GRC. If
@@ -78,7 +77,7 @@
         </ul>
         <h3>Faucet Rules</h3>
         <ul>
-            <li>You can only use the faucet one time</li>
+            <li>The faucet will only dispense GRC to you once</li>
             <li>If you already have a beacon setup, you can't use the faucet</li>
             <li>If you have >2 GRC in your wallet, you can't use the faucet since you already have enough for a beacon
             </li>
@@ -97,7 +96,6 @@
         <p>Current faucet balance: {{ BALANCE }}GRC.</p>
         <p>Total faucet uses: {{ config.TOTAL_DISPENSED }} for {{ config.TOTAL_GRC_DISPENSED }} total GRC</p>
     </div>
-    <div class="column" id="rightcolumn"></div>
 </div>
 
 <!-- Google tag (gtag.js) -->
