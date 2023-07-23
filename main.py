@@ -5,8 +5,16 @@ from bs4 import BeautifulSoup
 import logging,redis
 import config,os
 from time import sleep
-logging.basicConfig(filename=os.path.join(config.data_storage_dir,'server.log'), level=logging.INFO)
+log = logging.getLogger()
+handler = logging.handlers.RotatingFileHandler(os.path.join(config.data_storage_dir,'server.log'),
+                                                   maxBytes=10 * 1024 * 1024, backupCount=1)
+log.setLevel(os.environ.get("LOGLEVEL", "DEBUG"))
+formatter = logging.Formatter(fmt="[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s")
+handler.setFormatter(formatter)
+log.addHandler(handler)
 logging.info('Server starting...')
+log.info("Start faucet log")
+
 from flask import Flask,render_template,request
 from flask_hcaptcha import hCaptcha
 from typing import List,Dict,Tuple,Union,Type
