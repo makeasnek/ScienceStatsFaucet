@@ -3,6 +3,7 @@ import requests,common
 import xmltodict
 from bs4 import BeautifulSoup
 import logging,redis
+import logging.handlers
 import config,os
 from time import sleep
 log = logging.getLogger()
@@ -51,7 +52,7 @@ def get_credit_wcg(url:str,address:str)-> Union[None,str]:
     """
 
     :param url: Any URL
-    :return: String detailing error or None
+    :return: String of credit amount or None
     """
     try:
 
@@ -65,7 +66,7 @@ def get_credit_wcg(url:str,address:str)-> Union[None,str]:
         if address[0:29] not in name:
             return "GRC address not found on profile page"
     except Exception as e:
-        return str(e)
+        logging.error('Error getting WCG credit for user {} {}'.format(url,e))
 def get_credit_nfs(url:str,address:str)-> Union[int,str]:
     """
 
@@ -308,6 +309,15 @@ def faucet():
             if isinstance(credits,str):
                 logging.info('Request declined error getting profile url: {}'.format(credits))
                 logging.error("Error getting profile URL {} : {}".format(profile_url,credits))
+                return render_template('index.html',
+                                       ERROR="ERROR: Error fetching profile page or parsing url. Make sure you changed your username to your GRC address",
+                                       BALANCE=balance, BALANCE_WARNING=balance_warning,
+                                       REQUIRED_CREDITS=required_credits_html,
+                                       FAUCETADDRESS=config.faucet_donation_address)
+            if not credits:
+                if isinstance(credits, str):
+                    logging.info('Request declined error getting profile url: {}'.format(credits))
+                    logging.error("Error getting profile URL {} : {}".format(profile_url, credits))
                 return render_template('index.html', ERROR="ERROR: Error fetching profile page or parsing url. Make sure you changed your username to your GRC address",BALANCE=balance,BALANCE_WARNING=balance_warning,REQUIRED_CREDITS=required_credits_html,FAUCETADDRESS=config.faucet_donation_address)
         balance = get_balance(grc_client)
         if balance>10 or config.SKIP_LOW_BALANCE_CHECK:
