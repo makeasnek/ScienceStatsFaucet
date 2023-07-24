@@ -135,18 +135,18 @@ def send_grc(grc_client:common.GridcoinClientConnection,address:str,amount:float
     return None
 def get_address_balance(address:str)->int:
     try:
-        url='https://www.gridcoinstats.eu/address/'+address
+        url='https://www.gridcoinstats.eu/API/simpleQuery.php?q=address&v='+address
         # request user's profile page
         response = requests.get(url)
         html_response = response.content.decode()
         html_response=html_response.replace('\n','')
 
         # find user credit total
-        match = re.search("(<p>Address Balance:</p><span class='' style='color: \w*' title=')(\d*)", html_response, flags=re.MULTILINE|re.IGNORECASE)
+        match = re.search("\d*", html_response, flags=re.MULTILINE|re.IGNORECASE)
         if match:
             #print('match is ' + match.group(2))
-            result = match.group(2).replace(',', '')
-            return int(result)
+            result = match.string
+            return int(float(result))
     except Exception as e:
         logging.error('Error fetching address balance {} {}'.format(address,e))
         return 0
