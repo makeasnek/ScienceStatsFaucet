@@ -134,6 +134,7 @@ def send_grc(grc_client:common.GridcoinClientConnection,address:str,amount:float
             return tx_id
     return None
 def get_address_balance(address:str)->int:
+    html_response=''
     try:
         url='https://www.gridcoinstats.eu/API/simpleQuery.php?q=address&v='+address
         # request user's profile page
