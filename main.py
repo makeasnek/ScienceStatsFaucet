@@ -147,8 +147,10 @@ def get_address_balance(address:str)->int:
             #print('match is ' + match.group(2))
             result = match.string
             return int(float(result))
+        if html_response.strip()=='':
+            return 0
     except Exception as e:
-        logging.error('Error fetching address balance {} {}'.format(address,e))
+        logging.error('Error fetching address balance {} {}. HTML response is {}'.format(address,e,html_response))
         return 0
     return 0
 def make_required_credits_html(redis:redis.Redis, project_list:List[str]):
