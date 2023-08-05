@@ -143,13 +143,15 @@ def get_address_balance(address:str)->int:
         html_response=html_response.replace('\n','')
 
         # find user credit total
+        if html_response.strip()=='':
+            return 0
+        if 'INVALID ADDRESS' in html_response.upper():
+            return 0
         match = re.search("\d*", html_response, flags=re.MULTILINE|re.IGNORECASE)
         if match:
             #print('match is ' + match.group(2))
             result = match.string
             return int(float(result))
-        if html_response.strip()=='':
-            return 0
     except Exception as e:
         logging.error('Error fetching address balance {} {}. HTML response is {}'.format(address,e,html_response))
         return 0
