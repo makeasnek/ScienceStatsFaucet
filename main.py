@@ -299,7 +299,7 @@ def faucet():
                                        FAUCETADDRESS=config.faucet_donation_address)
             credits_result=common.user_above_minimum(user=user,mag_per_rac=float(mag_per_rac),padding=config.padding,faucet_amount=config.faucet_grc_amount)
             if isinstance(credits_result,float):
-                logging.info('Request declined not enough credit')
+                logging.info('Request declined not enough credit. Credit_result is {}'.format(credits_result))
                 return render_template('index.html',
                                        ERROR="ERROR: Your current crunching would have earned you approx {:.2f} GRC, you must wait until it is over {}. Try again later :)".format(credits_result,config.faucet_grc_amount),
                                        BALANCE=balance, BALANCE_WARNING=balance_warning,
