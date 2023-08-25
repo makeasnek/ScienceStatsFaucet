@@ -330,6 +330,7 @@ def faucet():
                 common.ban_uid(redis=redis,uid=uid,standardized_project_url=standardized_project_url)
                 common.ban_cpid(redis=redis,cpid=cpid)
             try:
+                logging.info('Preparing to award user')
                 # send tx
                 tx_id=send_grc(grc_client=grc_client,address=grc_address, amount=config.faucet_grc_amount)
 
