@@ -355,6 +355,8 @@ def faucet():
                                            BALANCE=balance, BALANCE_WARNING=balance_warning,
                                            REQUIRED_CREDITS=required_credits_html,
                                            FAUCETADDRESS=config.faucet_donation_address)
+                else:
+                    logging.error('No txid returned?')
             except Exception as e:
                 logging.error('Error sending {} grc to {}: {}'.format(config.faucet_grc_amount,grc_address,e))
     else:
