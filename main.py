@@ -50,7 +50,7 @@ def valid_profile_url(url: str) -> bool:
 
 def get_credit_wcg(url:str,address:str)-> Union[None,str]:
     """
-
+    Verify user's GRC address is in page. If not, return error as str
     :param url: Any URL
     :return: String of credit amount or None
     """
@@ -63,10 +63,10 @@ def get_credit_wcg(url:str,address:str)-> Union[None,str]:
 
         # verify address matches
         name=found_dict.get('user',{}).get('name')
-        if address[0:29] not in name:
-            return "GRC address not found on profile page"
+        if address[0:20] not in name:
+            return "GRC address not found on WCG profile page. Maybe WCG site is down?".format(name)
     except Exception as e:
-        logging.error('Error getting WCG credit for user {} {}'.format(url,e))
+        logging.error('Error getting WCG credit for user {} {}.  found address if any is {}'.format(url,e,name))
 def get_credit_nfs(url:str,address:str)-> Union[int,str]:
     """
 
@@ -86,8 +86,11 @@ def get_credit_nfs(url:str,address:str)-> Union[int,str]:
         address_search='<title>'+address+'</title>'
         address_match = re.search(address_search, single_line_html_response,
                           flags=re.MULTILINE|re.IGNORECASE)
+        found_address=re.search('<title>.*</title>', single_line_html_response,
+                          flags=re.MULTILINE|re.IGNORECASE)
         if not address_match:
-            return "GRC address not found on profile page"
+            print('GRC address {} not found on profile page if any found addr is {}'.format(address,found_address))
+            return "GRC address not found on NFS profile page"
 
         # get credit
         for row in tables:
@@ -116,7 +119,7 @@ def get_credit_amicable(url:str,address:str)-> Union[str,int]:
         address_match = re.search(address_search, html_response,
                           flags=re.MULTILINE|re.IGNORECASE)
         if not address_match:
-            return "GRC address not found on profile page"
+            return "GRC address not found on Amicable profile page"
 
         # find user credit total
         match = re.search('(Total credit</td>        <td style="padding-left:12px" >)([\d,]*)', html_response, flags=re.MULTILINE|re.IGNORECASE)
