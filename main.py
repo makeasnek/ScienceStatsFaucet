@@ -269,7 +269,7 @@ def faucet():
         if not config.SKIP_BALANCE_CHECK:
             address_balance=get_address_balance(address=grc_address)
             if address_balance>3:
-                logging.info('Request declined address <3')
+                logging.info('Request declined address >3')
                 return render_template('index.html',
                                    ERROR="ERROR: You are ineligible to use this faucet because you have enough GRC to start a beacon",
                                    BALANCE=balance, BALANCE_WARNING=balance_warning,REQUIRED_CREDITS=required_credits_html,FAUCETADDRESS=config.faucet_donation_address)
