@@ -85,12 +85,14 @@ If this faucet gives you any troubles, please contact makeasnek on the <a href="
         This faucet is funded by people like you! You can donate directly to the faucet by sending GRC to
         {{FAUCETADDRESS}}.<br><br>
         You can also sidestake, which means donating a % of your staking rewards, this is a good way to donate small
-        amounts over time. To add this to your wallet's sidestakes, go to hamburger menu (top left) --> help --> debug
-        window --> console and type in the following two commands followed by enter. Replace the number 5 with the % you
-        would like to donate from each stake.
+        amounts over time. To add this faucet to your wallet's sidestakes:
         <ul>
+            <li>Shut down Gridcoin wallet</li>
+            <li>Open the GridcoinResearch.conf file in your <a href="https://gridcoin.us/wiki/faq.html">data directory</a></li>
+            <li>Add the following two lines, changing 5 to the % you want to donate from each stake. 5=5%, 10=10% etc</li>
             <li>enablesidestaking=1</li>
             <li> sidestake={{ FAUCETADDRESS }},5</li>
+            <li>Save the file and re-open your wallet</li>
         </ul>
         Special thanks to <a href="https://gridcoinstats.eu" target="_blank">Gridcoinstats.eu</a> which this faucet relies on. They could use a donation too SK7WASoXZFQrQLwTmabkS3Co8RUq6UevDU.<br><br>
         <p>Current faucet balance: {{ BALANCE }}GRC.</p>
